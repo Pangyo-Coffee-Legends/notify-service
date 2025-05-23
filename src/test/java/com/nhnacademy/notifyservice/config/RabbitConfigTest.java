@@ -7,11 +7,13 @@ import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestPropertySource(properties = "email.queue=email-queue")
 @SpringBootTest
 class RabbitConfigTest {
 
