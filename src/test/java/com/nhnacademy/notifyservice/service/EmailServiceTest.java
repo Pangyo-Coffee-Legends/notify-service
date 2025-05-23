@@ -30,7 +30,7 @@ class EmailServiceTest {
     @Test
     @DisplayName("이메일 발송 - text")
     void sendTextEmail() {
-        EmailRequest request = new EmailRequest("test@test.com", "이메일 발송(text)", "이메일 발송 테스트");
+        EmailRequest request = new EmailRequest("test@test.com", "이메일 발송(text)", "이메일 발송 테스트", "TEXT");
         service.sendTextEmail(request);
 
         Mockito.verify(sender, Mockito.times(1)).send(Mockito.any(SimpleMailMessage.class));
@@ -43,7 +43,7 @@ class EmailServiceTest {
         MimeMessage message = new MimeMessage(session);
         Mockito.when(sender.createMimeMessage()).thenReturn(message);
 
-        EmailRequest request = new EmailRequest("test@test.com", "이메일 발송(text)", "<p><b>이메일</b> 발송 테스트</p>");
+        EmailRequest request = new EmailRequest("test@test.com", "이메일 발송(text)", "<p><b>이메일</b> 발송 테스트</p>", "HTML");
         service.sendHtmlEmail(request);
 
         Mockito.verify(sender, Mockito.times(1)).createMimeMessage();

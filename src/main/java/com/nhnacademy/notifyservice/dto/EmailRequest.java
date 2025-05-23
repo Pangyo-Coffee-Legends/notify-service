@@ -1,18 +1,23 @@
 package com.nhnacademy.notifyservice.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
-@Getter
-@ToString
+import java.io.Serializable;
+
+@Data
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@EqualsAndHashCode
-public class EmailRequest {
+public class EmailRequest implements Serializable {
 
     private String to;
     private String subject;
     private String content;
+    private String type; // "TEXT" 또는 "HTML"
 
+    public EmailRequest(String to, String subject, String content) {
+        this.to = to;
+        this.subject = subject;
+        this.content = content;
+        this.type = null;
+    }
 }

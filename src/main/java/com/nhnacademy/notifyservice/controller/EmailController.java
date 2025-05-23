@@ -2,8 +2,7 @@ package com.nhnacademy.notifyservice.controller;
 
 
 import com.nhnacademy.notifyservice.dto.EmailRequest;
-import com.nhnacademy.notifyservice.service.EmailService;
-import jakarta.mail.MessagingException;
+import com.nhnacademy.notifyservice.producer.EmailQueueProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class EmailController {
 
-    private final EmailService emailService;
+    private final EmailQueueProducer emailQueueProducer;
 
     /**
      * 일반 텍스트 이메일을 발송합니다.
@@ -28,7 +27,8 @@ public class EmailController {
      */
     @PostMapping("/text")
     public ResponseEntity<String> sendTextEmail(@Validated @RequestBody EmailRequest request) {
-        emailService.sendTextEmail(request);
+        emailQueueProducer.sendTextEmail(request);
+
         return ResponseEntity.ok("텍스트 이메일이 성공적으로 발송되었습니다.");
     }
 
@@ -40,11 +40,8 @@ public class EmailController {
      */
     @PostMapping("/html")
     public ResponseEntity<String> sendHtmlEmail(@Validated @RequestBody EmailRequest request) {
-        try {
-            emailService.sendHtmlEmail(request);
-            return ResponseEntity.ok("HTML 이메일이 성공적으로 발송되었습니다.");
-        } catch (MessagingException e) {
-            return ResponseEntity.internalServerError().body("이메일 발송 중 오류가 발생했습니다: " + e.getMessage());
-        }
+        emailQueueProducer.sendHtmlEmail(request);
+
+        return ResponseEntity.ok("HTML 이메일이 성공적으로 발송되었습니다.");
     }
 }
