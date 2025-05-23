@@ -7,7 +7,9 @@ import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Map;
 
@@ -34,6 +36,9 @@ class RabbitConfigTest {
 
     @Autowired
     private Binding dlqBinding;
+
+    @MockitoBean
+    JavaMailSender javaMailSender;
 
     @Test
     @DisplayName("이메일 발송용 원본 큐가 올바르게 생성되고 DLX/DLQ 설정이 적용된다")
