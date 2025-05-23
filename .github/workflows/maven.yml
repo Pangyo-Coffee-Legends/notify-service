@@ -74,17 +74,6 @@ jobs:
           script: |
             echo "${{ secrets.APPLICATION_PROPERTIES }}" > ~/notify/application.properties
 
-      - name: Upload startup.sh to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_IP }}
-          username: ${{ secrets.SSH_ID }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          source: "startup.sh"
-          target: "~/notify/"
-          overwrite: true
-
       - name: execute notify startup script
         uses: appleboy/ssh-action@master
         with:
@@ -95,4 +84,3 @@ jobs:
           script: |
             chmod +x ~/notify/startup.sh
             cd ~/notify && ./startup.sh
-            ./startup.sh
