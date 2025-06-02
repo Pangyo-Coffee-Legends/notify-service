@@ -18,6 +18,7 @@ class EmailQueueConsumerTest {
     NotificationServiceImpl notificationService;
     EmailQueueConsumer consumer;
 
+
     @BeforeEach
     void setUp() {
         emailService = mock(EmailService.class);
