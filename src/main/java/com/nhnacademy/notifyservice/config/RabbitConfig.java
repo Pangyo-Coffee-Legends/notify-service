@@ -23,7 +23,6 @@ import java.util.Map;
  */
 @Configuration
 public class RabbitConfig {
-
     /**
      * 이메일 발송용 큐 이름을 외부 프로퍼티에서 주입받습니다.
      */
