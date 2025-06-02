@@ -49,6 +49,7 @@ class EmailQueueConsumerTest {
         verify(emailService, never()).sendHtmlEmail(any());
     }
 
+
     @Test
     @DisplayName("type이 null이어도 sendTextEmail이 호출된다")
     void receiveEmailRequest_nullType_callsSendTextEmail() throws MessagingException {
