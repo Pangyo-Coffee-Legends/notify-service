@@ -2,6 +2,7 @@ package com.nhnacademy.notifyservice.consumer;
 
 import com.nhnacademy.notifyservice.dto.EmailRequest;
 import com.nhnacademy.notifyservice.service.EmailService;
+import com.nhnacademy.notifyservice.service.NotificationServiceImpl;
 import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,12 +15,14 @@ import static org.mockito.Mockito.*;
 class EmailQueueConsumerTest {
 
     EmailService emailService;
+    NotificationServiceImpl notificationService;
     EmailQueueConsumer consumer;
 
     @BeforeEach
     void setUp() {
-        emailService = mock();
-        consumer = new EmailQueueConsumer(emailService);
+        emailService = mock(EmailService.class);
+        notificationService = mock(NotificationServiceImpl.class);
+        consumer = new EmailQueueConsumer(emailService, notificationService);
     }
 
     @Test
