@@ -4,6 +4,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# 환경설정 파일 무시 (예: Spring Boot, DB, API Key 등)
+application-local.properties
+*.yml
+*.yaml
+/logs
+
 ### STS ###
 .apt_generated
 .classpath
@@ -28,6 +34,3 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-### VS Code ###
-.vscode/
