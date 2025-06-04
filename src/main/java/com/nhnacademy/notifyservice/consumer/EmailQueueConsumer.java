@@ -4,7 +4,7 @@ import com.nhnacademy.notifyservice.domain.Member;
 import com.nhnacademy.notifyservice.domain.Role;
 import com.nhnacademy.notifyservice.dto.EmailRequest;
 import com.nhnacademy.notifyservice.service.EmailService;
-import com.nhnacademy.notifyservice.service.NotificationServiceImpl;
+import com.nhnacademy.notifyservice.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -29,7 +29,7 @@ public class EmailQueueConsumer {
      * 실제 이메일 발송을 담당하는 서비스입니다.
      */
     private final EmailService emailService;
-    private final NotificationServiceImpl notificationService;
+    private final NotificationService notificationService;
 
     /**
      * RabbitMQ 큐에서 EmailRequest 메시지를 수신하여 이메일을 발송합니다.

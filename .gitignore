@@ -8,6 +8,7 @@ target/
 application-local.properties
 *.yml
 *.yaml
+/logs
 
 ### STS ###
 .apt_generated
@@ -33,6 +34,3 @@ application-local.properties
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-### VS Code ###
-.vscode/
