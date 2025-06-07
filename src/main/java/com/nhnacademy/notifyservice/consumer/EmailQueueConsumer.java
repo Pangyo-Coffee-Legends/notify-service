@@ -45,25 +45,35 @@ public class EmailQueueConsumer {
     @RabbitListener(queues = "${email.queue}")
     public void receiveEmailRequest(EmailRequest request) {
 
-        try {
-            List<Member> members = notificationService.findByRole_RoleName("ROLE_ADMIN");
-            Role role = notificationService.findByRoleName("ROLE_ADMIN");
+        List<Member> admins = notificationService.findByRole_RoleName("ROLE_ADMIN");
+        Role role = notificationService.findByRoleName("ROLE_ADMIN");
 
-            for(Member m : members) {
-                // 큐에서 메시지 꺼낸 후 저장하고 프런트로 전송
-                System.out.println(m.getMbEmail());
-                notificationService.saveNotificationMessage(m, role, request.getContent());
+        try{
+            if(request.getRoleType().equals("ROLE_ADMIN")) {
+                // 관리자 메시지
+                for(Member admin : admins) {
+                    // 큐에서 메시지 꺼낸 후 저장하고 프런트로 전송 (관리자는 모든 알림 메시지 저장)
+                    notificationService.saveNotificationMessage(admin, role, request);
+                }
+
+                if (request.getType().equals("HTML")) {
+                    // 이메일로 HTML 메시지 전송
+                    emailService.sendHtmlEmail(request);
+                } else if (request.getType().equals("TEXT")) {
+                    // 이메일로 텍스트 메시지 전송
+                    emailService.sendTextEmail(request);
+                }
+
+                log.info("이메일 발송 성공 : {}", request);
+            } else if(request.getRoleType().equals("ROLE_ALL")) {
+                // 팝업 메시지
+                String toEmail = request.getTo();
+
+                Member member = notificationService.findMemberByEmail(toEmail);
+
+                notificationService.sendNotification(member, request.getContent());
             }
-
-            if ("HTML".equalsIgnoreCase(request.getType())) {
-                emailService.sendHtmlEmail(request);
-            } else {
-                emailService.sendTextEmail(request);
-                // 프런트 단으로 html 메시지 전송
-            }
-
-            log.info("이메일 발송 성공 : {}", request);
-        } catch (Exception e) {
+        }  catch (Exception e) {
             log.error("이메일 발송 실패 : {}", request, e);
 
             // Slack 등 실시간 알림 연동 기능

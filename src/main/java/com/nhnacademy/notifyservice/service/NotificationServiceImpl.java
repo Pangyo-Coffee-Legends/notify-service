@@ -1,7 +1,8 @@
 package com.nhnacademy.notifyservice.service;
 
 import com.nhnacademy.notifyservice.config.NotificationSessionTracker;
-import com.nhnacademy.notifyservice.converter.HtmlTextConverter;
+import com.nhnacademy.notifyservice.dto.EmailRequest;
+import com.nhnacademy.notifyservice.util.HtmlTextConverter;
 import com.nhnacademy.notifyservice.domain.Member;
 import com.nhnacademy.notifyservice.domain.NotificationMessage;
 import com.nhnacademy.notifyservice.domain.Role;
@@ -12,7 +13,6 @@ import com.nhnacademy.notifyservice.repository.NotificationMessageRepository;
 import com.nhnacademy.notifyservice.repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.jsoup.Jsoup;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +52,12 @@ public class NotificationServiceImpl implements NotificationService {
     private final SimpMessageSendingOperations messageTemplate;
     private final NotificationSessionTracker notificationSessionTracker;
     private final HtmlTextConverter htmlTextConverter;
+
+
+    public Member findMemberByEmail(String email) {
+        return memberRepository.findByMbEmail(email).orElseThrow(() -> new EntityNotFoundException("member cannot be found."));
+    }
+
     /**
      * 사용자 이메일을 기반으로 해당 사용자의 역할 정보를 조회합니다.
      *
@@ -133,10 +139,16 @@ public class NotificationServiceImpl implements NotificationService {
      * @param content 알림 메시지 내용
      */
     @Override
-    public void saveNotificationMessage(Member member, Role role ,String content) {
+    public void saveNotificationMessage(Member member, Role role , EmailRequest request) {
 
-        // 관리자용 구조화된 텍스트로 변환
-        String adminFormattedContent = htmlTextConverter.convertToAdminNotification(content);
+        String adminFormattedContent = request.getContent();
+        String adminSummary = null;
+
+        if(request.getType().equals("HTML")) {
+            // 관리자용 구조화된 텍스트로 변환
+            // HTML인 경우 관리자가 보기 편한 형태로 저장
+            adminFormattedContent = htmlTextConverter.convertToAdminNotification(adminFormattedContent);
+        }
 
         // ✅ 현재 사용자의 활성 세션 수 계산
         long sessionCount = notificationSessionTracker.getNotificationSessionIdToUserEmailMap().values()
@@ -147,7 +159,7 @@ public class NotificationServiceImpl implements NotificationService {
         NotificationMessage notificationMessage = NotificationMessage.builder()
                 .member(member)
                 .role(role)
-                .content(adminFormattedContent) // 관리자가 보기 편한 형태로 저장
+                .content(adminFormattedContent)
                 .isRead(sessionCount >= 2) // ✅ 2개 이상 세션 시 즉시 읽음
                 .build();
 
@@ -157,16 +169,34 @@ public class NotificationServiceImpl implements NotificationService {
             // 현재 접속중인 사용자에게만 notification count 및 content 메시지 보냄
             if(sessionCount < 2) {
                 // 관리자용 요약 메시지 (팝업용)
-                String adminSummary = htmlTextConverter.createAdminSummary(content, 80);
+                if(request.getType().equals("HTML")) {
+                    // 관리자용 구조화된 텍스트로 변환
+                    // HTML인 경우 관리자가 보기 편한 형태로 저장
+                    adminSummary = htmlTextConverter.createAdminSummary(request.getContent(), 150);
+                } else if(request.getType().equals("TEXT")) {
+                    adminSummary = request.getContent();
+                }
 
                 // 알림 페이지에 접속하지 않았을 때만 안읽은 알림 개수와 팝업 메시지 전송
                 Long count = notificationMessageRepository.countByMemberAndIsReadFalse(member);
-                messageTemplate.convertAndSend("/notification/unread-notification-count-updates/" + member.getMbEmail(), count);
-                messageTemplate.convertAndSend("/notification/notification-message/" + member.getMbEmail(), adminSummary);
+
+                messageTemplate.convertAndSend("/notification/unread-notification-count-updates/" + member.getMbEmail(),
+                        count);
+
+                // 관리자 본인이 예약/취소한 경우의 팝업 메시지는 발송하지 않도록 설정
+                if(!request.getContent().contains(member.getMbEmail())) {
+                    messageTemplate.convertAndSend("/notification/notification-message/" + member.getMbEmail(),
+                            adminSummary);
+                }
             }
-            messageTemplate.convertAndSend("/notification/" + member.getMbEmail(), adminFormattedContent);
+
+
+            // notification 페이지로 전송하는 메시지
+            messageTemplate.convertAndSend("/notification/" + member.getMbEmail(),
+                    adminFormattedContent);
         }
     }
+
     /**
      * 특정 사용자의 읽지 않은 알림 개수를 조회합니다.
      *
@@ -233,5 +263,10 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         return notificationMessageDtos;
+    }
+
+    @Override
+    public void sendNotification(Member member, String content) {
+        messageTemplate.convertAndSend("/notification/notification-message/" + member.getMbEmail(), content);
     }
 }

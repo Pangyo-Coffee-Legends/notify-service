@@ -1,4 +1,4 @@
-package com.nhnacademy.notifyservice.converter;
+package com.nhnacademy.notifyservice.util;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
